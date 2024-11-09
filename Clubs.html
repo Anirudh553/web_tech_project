@@ -1,126 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PES University Clubs</title>
-    <style>
-        /* Basic reset and styling */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
-            color: #ffffff;
-            background-color: #1a1a1a;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Club Manager with Add Club Page</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    .club-manager, .add-club-page {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .welcome-section {
+      font-size: 32px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    body{
+      background-color: beige;
+    }
+    .clubs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 20px;
+      
+    }
 
-        /* Background animated circles */
-        .circle {
-            position: absolute;
-            border-radius: 50%;
-            opacity: 0.2;
-            animation: float 15s ease-in-out infinite;
-            background: radial-gradient(circle at center, rgba(142, 68, 173, 0.8), transparent);
-            z-index: -1;
-        }
-        .circle:nth-child(1) {
-            width: 200px;
-            height: 200px;
-            top: 20%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-        .circle:nth-child(2) {
-            width: 300px;
-            height: 300px;
-            top: 50%;
-            left: 70%;
-            animation-delay: 5s;
-        }
-        .circle:nth-child(3) {
-            width: 250px;
-            height: 250px;
-            top: 80%;
-            left: 30%;
-            animation-delay: 10s;
-        }
+    .club-name {
+      padding: 40px;
+      font-size: 24px;
+      color: #fff;
+      border-radius: 8px;
+      background-size: cover;
+      background-position: center;
+      font-weight: bold;
+    }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0) translateX(0); }
-            50% { transform: translateY(-20px) translateX(10px); }
-        }
+    .new-club-form input, .new-club-form textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
 
-        /* Container styling */
-        .container {
-            text-align: center;
-            max-width: 800px;
-            padding: 20px;
-            z-index: 1;
-        }
-        h1 {
-            font-size: 3rem;
-            color: #e0e0e0;
-            margin-bottom: 20px;
-            text-shadow: 0 0 15px #8e44ad;
-        }
-        p {
-            font-size: 1.2rem;
-            color: #b0b0b0;
-            margin-bottom: 30px;
-            text-shadow: 0 0 8px rgba(142, 68, 173, 0.3);
-        }
-
-        /* Button styling */
-        .club-button {
-            display: inline-block;
-            padding: 15px 30px;
-            margin: 10px;
-            font-size: 1.1rem;
-            color: #ffffff;
-            background: #1a1a1a;
-            border: 2px solid #8e44ad; /* Purple outline */
-            border-radius: 10px;
-            cursor: pointer;
-            text-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
-            box-shadow: 0 0 8px #00ff00, 0 0 10px rgba(142, 68, 173, 0.7);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .club-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px #00ff00, 0 0 20px #8e44ad;
-        }
-
-        /* New Club button with slightly different color */
-        .create-club-button {
-            background: #222;
-            border: 2px solid #6a0dad; /* Darker purple */
-        }
-    </style>
+    .new-club-form button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    
+    .back-button {
+      margin-top: 20px;
+      padding: 10px 15px;
+      cursor: pointer;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
-    <!-- Animated background circles -->
-    <div class="circle"></div>
-    <div class="circle"></div>
-    <div class="circle"></div>
+  <div id="root"></div>
 
-    <div class="container">
-        <h1>Welcome to PES University Clubs</h1>
-        <p>Discover our vibrant clubs that empower students to explore their passions, gain new skills, and connect with like-minded peers.</p>
-        
-        <button class="club-button">Tech Club</button>
-        <button class="club-button">Art Club</button>
-        <button class="club-button">Sports Club</button>
-        <button class="club-button">Music Club</button>
-        <button class="club-button">Literature Club</button>
-        <button class="club-button create-club-button">Create New Club</button>
-    </div>
+  <script type="text/babel">
+    function ClubManager() {
+      const [clubs, setClubs] = React.useState([
+        { name: "Club A", members: 10, backgroundImage: "background1.jpg", essentials: "Essentials for Club A" },
+        { name: "Club B", members: 15, backgroundImage: "background2.jpg", essentials: "Essentials for Club B" }
+      ]);
+      const [showAddClub, setShowAddClub] = React.useState(false);
+
+      const addNewClub = (newClub) => {
+        setClubs([...clubs, newClub]);
+        setShowAddClub(false);
+      };
+
+      return (
+        <div className="club-manager">
+          {showAddClub ? (
+            <AddClubPage onAddClub={addNewClub} onCancel={() => setShowAddClub(false)} />
+          ) : (
+            <>
+              <div className="welcome-section">Welcome to the Club Manager!</div>
+              <div className="clubs-grid">
+                {clubs.map((club, index) => (
+                  <div
+                    key={index}
+                    className="club-name"
+                    style={{
+                      backgroundImage: `url(${club.backgroundImage})`
+                    }}
+                  >
+                    {club.name} 
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => setShowAddClub(true)}>Add New Club</button>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    function AddClubPage({ onAddClub, onCancel }) {
+      const [name, setName] = React.useState("");
+      const [members, setMembers] = React.useState("");
+      const [backgroundImage, setBackgroundImage] = React.useState("");
+      const [essentials, setEssentials] = React.useState("");
+
+      const handleAddClub = () => {
+        if (name && members && backgroundImage && essentials) {
+          onAddClub({
+            name,
+            members: parseInt(members, 10),
+            backgroundImage,
+            essentials
+          });
+        }
+      };
+
+      return (
+        <div className="add-club-page">
+          <h2>Add a New Club</h2>
+          <form className="new-club-form" onSubmit={(e) => e.preventDefault()}>
+            <input
+              type="text"
+              placeholder="Club Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <input
+              type="number"
+              placeholder="Number of Members"
+              value={members}
+              onChange={(e) => setMembers(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Background Image URL"
+              value={backgroundImage}
+              onChange={(e) => setBackgroundImage(e.target.value)}
+            />
+            <textarea
+              placeholder="Club Essentials"
+              value={essentials}
+              onChange={(e) => setEssentials(e.target.value)}
+            />
+            <button type="button" onClick={handleAddClub}>Add Club</button>
+            <button type="button" className="back-button" onClick={onCancel}>Back to Club List</button>
+          </form>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<ClubManager />);
+  </script>
 </body>
 </html>
