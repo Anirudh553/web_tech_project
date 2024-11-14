@@ -6,7 +6,77 @@
   <title>Club Manager with Add Club Page</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script> <!-- Add axios -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    html, body, #root {
+      height: 100%;
+      margin: 0;
+    }
+    body {
+      background-color: beige;
+      font-family: Arial, sans-serif;
+    }
+    .clubManager {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      text-align: center;
+      background-color: beige;
+    }
+    .welcomeSection {
+      font-size: 32px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .clubsGrid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .clubName {
+      padding: 40px;
+      font-size: 24px;
+      color: #fff;
+      border-radius: 8px;
+      background-size: cover;
+      background-position: center;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .clubDetails {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      background-color: #f9f9f9;
+    }
+    .newClubForm {
+      width: 100%;
+    }
+    .formInput {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    .formButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .backButton {
+      margin-top: 20px;
+      padding: 10px 15px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
@@ -39,7 +109,14 @@
         borderRadius: "8px",
         backgroundSize: "cover",
         backgroundPosition: "center",
-        fontWeight: "bold"
+        fontWeight: "bold",
+        cursor: "pointer"
+      },
+      clubDetails: {
+        marginTop: "20px",
+        padding: "20px",
+        border: "1px solid #ddd",
+        backgroundColor: "#f9f9f9",
       },
       newClubForm: {
         width: "100%"
@@ -68,11 +145,28 @@
     };
 
     function ClubManager() {
-      const [clubs, setClubs] = React.useState([
-        { name: "Club A", members: 10, backgroundImage: "background1.jpg", essentials: "Essentials for Club A" },
-        { name: "Club B", members: 15, backgroundImage: "background2.jpg", essentials: "Essentials for Club B" }
-      ]);
+      const [clubs, setClubs] = React.useState([]);
+      const [selectedClub, setSelectedClub] = React.useState(null);
       const [showAddClub, setShowAddClub] = React.useState(false);
+
+      // Fetch clubs when the component mounts
+      React.useEffect(() => {
+        axios.get("http://localhost:5000/api/clubs", {
+          headers: {
+            "Cache-Control": "no-cache" // Ensure fresh data is fetched
+          }
+        })
+        .then(response => {
+          setClubs(response.data);
+        })
+        .catch(error => {
+          console.error("Error fetching clubs:", error);
+        });
+      }, []);
+
+      const selectClub = (club) => {
+        setSelectedClub(club);
+      };
 
       const addNewClub = (newClub) => {
         setClubs([...clubs, newClub]);
@@ -81,7 +175,15 @@
 
       return (
         <div style={styles.clubManager}>
-          {showAddClub ? (
+          {selectedClub ? (
+            <div style={styles.clubDetails}>
+              <h2>{selectedClub.name} Details</h2>
+              <p><strong>Members:</strong> {selectedClub.members}</p>
+              <p><strong>Essentials:</strong> {selectedClub.essentials}</p>
+              <p><strong>Background Image:</strong> <img src={selectedClub.backgroundImage} alt="Club Background" style={{ width: "100%", height: "auto" }} /></p>
+              <button style={styles.backButton} onClick={() => setSelectedClub(null)}>Back to Club List</button>
+            </div>
+          ) : showAddClub ? (
             <AddClubPage onAddClub={addNewClub} onCancel={() => setShowAddClub(false)} />
           ) : (
             <>
@@ -94,8 +196,9 @@
                       ...styles.clubName,
                       backgroundImage: `url(${club.backgroundImage})`
                     }}
+                    onClick={() => selectClub(club)}
                   >
-                    {club.name} 
+                    {club.name}
                   </div>
                 ))}
               </div>
@@ -112,14 +215,20 @@
       const [backgroundImage, setBackgroundImage] = React.useState("");
       const [essentials, setEssentials] = React.useState("");
 
-      const handleAddClub = () => {
+      const handleAddClub = async () => {
         if (name && members && backgroundImage && essentials) {
-          onAddClub({
+          const newClub = {
             name,
             members: parseInt(members, 10),
             backgroundImage,
-            essentials
-          });
+            essentials,
+          };
+          try {
+            const response = await axios.post("http://localhost:5000/api/clubs", newClub);
+            onAddClub(response.data);
+          } catch (error) {
+            console.error("Error adding club:", error);
+          }
         }
       };
 
@@ -161,7 +270,7 @@
       );
     }
 
-    ReactDOM.createRoot(document.getElementById("root")).render(<ClubManager />);
+    ReactDOM.render(<ClubManager />, document.getElementById("root"));
   </script>
 </body>
 </html>
